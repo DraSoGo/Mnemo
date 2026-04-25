@@ -1,0 +1,4 @@
+/mnemo
+*.test
+*.out
+.DS_Store
