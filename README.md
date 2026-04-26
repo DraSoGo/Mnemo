@@ -16,9 +16,9 @@
 ## ✨ Features
 
 - ⚡ **Fuzzy History Recall**: A full-screen Bubble Tea TUI launches on `Ctrl+R`, fuzzy-matches across your entire `~/.zsh_history`, and drops the chosen command into your prompt buffer (no auto-execute).
-- 🧠 **On-Demand AI Foresight**: Press `Alt+A` to send the current command to a local Ollama model. The completion appears as inline dim ghost text — accept with `Tab` or `→`, dismiss with any keystroke.
+- 🧠 **On-Demand AI Foresight**: Press `Ctrl+F` to send the current command to a local Ollama model. The completion appears as inline dim ghost text — accept with `Tab` or `→`, dismiss with any keystroke.
 - 🪶 **Zero Hook Drama**: No `zle-line-pre-redraw` polling, no `zsh-autosuggestions` conflicts, no race conditions. Trigger keys only.
-- 🔥 **Warm by Default**: Mnemo pre-loads the Ollama model in the background on shell startup so your first `Alt+A` is sub-second instead of 30+ seconds.
+- 🔥 **Warm by Default**: Mnemo pre-loads the Ollama model in the background on shell startup so your first `Ctrl+F` is sub-second instead of 30+ seconds.
 - 🧩 **Single Binary**: One Go binary, three subcommands (`pick`, `predict`, `warmup`). Statically linked, ~10 MB, runs anywhere.
 - 🛡️ **Local-First**: Ollama runs on `localhost`. Your shell history never leaves your machine.
 - 🎯 **Configurable**: Override every keybind, model, endpoint, timeout, or binary path via environment variables.
@@ -83,7 +83,7 @@ Verify the server is reachable:
 curl -s http://localhost:11434/api/tags | head
 ```
 
-On the next shell start, Mnemo will pre-warm the model in the background so your first `Alt+A` returns in sub-second instead of waiting for the cold-load.
+On the next shell start, Mnemo will pre-warm the model in the background so your first `Ctrl+F` returns in sub-second instead of waiting for the cold-load.
 
 ---
 
@@ -94,7 +94,7 @@ On the next shell start, Mnemo will pre-warm the model in the background so your
 | Key | Action |
 |-----|--------|
 | `Ctrl+R` | Open the fuzzy history picker (TUI) |
-| `Alt+A`  | Ask Ollama to complete the current command |
+| `Ctrl+F` | Ask Ollama to complete the current command |
 | `Tab`    | Accept ghost text — falls through to normal completion when no ghost |
 | `→`      | Accept ghost text at boundary — falls through to `forward-char` otherwise |
 | _any other key_ | Clears ghost text and edits normally |
@@ -107,7 +107,7 @@ On the next shell start, Mnemo will pre-warm the model in the background so your
 | `↑` / `Ctrl+P` / `Ctrl+K` | Move selection up |
 | `↓` / `Ctrl+N` / `Ctrl+J` | Move selection down |
 | `Enter` | Send selection to shell buffer (no execute) |
-| `Esc` / `Ctrl+C` / `Ctrl+G` | Cancel — buffer untouched |
+| `Esc` / `Ctrl+C` / `Ctrl+F` | Cancel — buffer untouched |
 
 ---
 
@@ -118,7 +118,7 @@ All configuration is environment-variable driven. Set these in `~/.zshrc` **befo
 ```zsh
 # Keybindings
 export MNEMO_KEYBIND='^R'              # picker (default: Ctrl+R)
-export MNEMO_PREDICT_KEY='\ea'         # predict (default: Alt+A)
+export MNEMO_PREDICT_KEY='^G'          # predict (default: Ctrl+F)
 
 # Ollama
 export MNEMO_MODEL='qwen2.5-coder:1.5b'
@@ -131,7 +131,7 @@ export MNEMO_WARMUP=1                  # 0 to disable startup warmup
 export MNEMO_BIN=/usr/local/bin/mnemo  # binary lookup override (rarely needed)
 ```
 
-Common keybind escape codes: `'^R'` = Ctrl+R, `'^T'` = Ctrl+T, `'\ea'` = Alt+A, `'\eh'` = Alt+H, `'\e[Z'` = Shift+Tab.
+Common keybind escape codes: `'^R'` = Ctrl+R, `'^T'` = Ctrl+T, `'^F'` = Ctrl+F, `'\eh'` = Alt+H, `'\e[Z'` = Shift+Tab.
 
 Binary lookup order: `$MNEMO_BIN` → `$PATH` → next to the plugin file.
 

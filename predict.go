@@ -99,7 +99,7 @@ func predictOllama(buffer string, cfg ollamaCfg) (string, error) {
 		"raw":        true,
 		"keep_alive": cfg.keepAlive,
 		"options": map[string]any{
-			"num_predict": 80,
+			"num_predict": 40, // 80 is too slow, 40 is plenty for a command
 			"temperature": 0.1,
 			"top_p":       0.9,
 			"stop":        []string{"\n", "$ ", "```", "#"},
@@ -141,16 +141,20 @@ func predictOllama(buffer string, cfg ollamaCfg) (string, error) {
 		return "", err
 	}
 
-	resp_line := result.Response
-	if idx := strings.IndexByte(resp_line, '\n'); idx >= 0 {
-		resp_line = resp_line[:idx]
+	respLine := strings.TrimSpace(result.Response)
+	if idx := strings.IndexByte(respLine, '\n'); idx >= 0 {
+		respLine = respLine[:idx]
 	}
-	// Model may echo buffer back; strip if so. Otherwise treat as continuation.
-	resp_line = strings.TrimPrefix(resp_line, "$ ")
-	resp_line = strings.TrimPrefix(resp_line, buffer)
-	resp_line = strings.TrimRight(resp_line, " `\"'")
-	if resp_line == "" {
+
+	// Be more aggressive in stripping prefixes
+	respLine = strings.TrimPrefix(respLine, "$")
+	respLine = strings.TrimSpace(respLine)
+	respLine = strings.TrimPrefix(respLine, buffer)
+	respLine = strings.TrimSpace(respLine)
+	respLine = strings.TrimRight(respLine, " `\"'")
+
+	if respLine == "" {
 		return "", nil
 	}
-	return buffer + resp_line, nil
+	return buffer + " " + respLine, nil
 }

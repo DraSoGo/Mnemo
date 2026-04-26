@@ -177,8 +177,8 @@ Test files live next to the code they test (`history_test.go` next to `history.g
 After any change to the plugin or binary, run through:
 
 1. `Ctrl+R` opens the picker. Type to filter. Up/Down navigates. Enter fills buffer. Esc cancels.
-2. `Alt+A` with Ollama running shows ghost text within 5 s (warm) or up to 30 s (cold). `Tab` accepts. `→` accepts at boundary. Any other key clears.
-3. `Alt+A` with Ollama **down** shows `[Ollama unavailable …]` once and clears on the next keystroke (no message bleed).
+2. `Ctrl+F` with Ollama running shows ghost text within 5 s (warm) or up to 30 s (cold). `Tab` accepts. `→` accepts at boundary. Any other key clears.
+3. `Ctrl+F` with Ollama **down** shows `[Ollama unavailable …]` once and clears on the next keystroke (no message bleed).
 4. Re-run `source ~/.zshrc`. Plugin loads without errors. No infinite recursion.
 5. With `zsh-autosuggestions` active: AI ghost suppresses autosuggestions; clearing AI ghost re-enables them.
 6. `mnemo warmup` runs in <1 s when Ollama already has the model loaded.
@@ -214,7 +214,7 @@ We follow [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/)
 feat(predict): add MNEMO_OLLAMA_URL env override
 fix(plugin): clear stale zle -M message on self-insert
 refactor(tui): extract scroll math into helper
-docs(readme): document Alt+A workflow
+docs(readme): document Ctrl+F workflow
 ```
 
 Keep the subject line under 72 characters. Use the body to explain the **why**, not the **what** — the diff already shows what changed.
