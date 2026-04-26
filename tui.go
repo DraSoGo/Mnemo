@@ -1,6 +1,7 @@
 package main
 
 import (
+	"strconv"
 	"strings"
 
 	"github.com/charmbracelet/bubbles/textinput"
@@ -10,8 +11,8 @@ import (
 )
 
 const (
-	maxVisible = 10
-	maxWidth   = 120
+	defaultMaxVisible = 10
+	maxWidth          = 120
 )
 
 var (
@@ -23,14 +24,15 @@ var (
 )
 
 type pickerModel struct {
-	all       []string
-	matches   fuzzy.Matches
-	cursor    int
-	scroll    int
-	input     textinput.Model
-	selected  string
-	cancelled bool
-	width     int
+	all        []string
+	matches    fuzzy.Matches
+	cursor     int
+	scroll     int
+	input      textinput.Model
+	selected   string
+	cancelled  bool
+	width      int
+	maxVisible int
 }
 
 func newPickerModel(all []string, initial string) pickerModel {
@@ -44,9 +46,10 @@ func newPickerModel(all []string, initial string) pickerModel {
 	ti.Focus()
 
 	m := pickerModel{
-		all:   all,
-		input: ti,
-		width: 80,
+		all:        all,
+		input:      ti,
+		width:      80,
+		maxVisible: defaultMaxVisible,
 	}
 	m.refilter()
 	return m
@@ -78,10 +81,14 @@ func (m pickerModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.width = maxWidth
 		}
 		m.input.Width = m.width - 4
+		// header(1) + blank(1) + input(1) + blank(1) + hint(1) = 5 lines overhead
+		if visible := msg.Height - 5; visible >= 3 {
+			m.maxVisible = visible
+		}
 
 	case tea.KeyMsg:
 		switch msg.String() {
-		case "esc", "ctrl+c", "ctrl+g":
+		case "esc", "ctrl+c", "ctrl+f":
 			m.cancelled = true
 			return m, tea.Quit
 
@@ -105,8 +112,8 @@ func (m pickerModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "down", "ctrl+n", "ctrl+j":
 			if m.cursor < len(m.matches)-1 {
 				m.cursor++
-				if m.cursor >= m.scroll+maxVisible {
-					m.scroll = m.cursor - maxVisible + 1
+				if m.cursor >= m.scroll+m.maxVisible {
+					m.scroll = m.cursor - m.maxVisible + 1
 				}
 			}
 			return m, nil
@@ -128,7 +135,7 @@ func (m pickerModel) View() string {
 	count := len(m.matches)
 	header := styleHeader.Render("history") + "  " +
 		styleHint.Render("↑/↓ select · Enter accept · Esc cancel · ") +
-		styleHeader.Render(itoa(count)+" matches")
+		styleHeader.Render(strconv.Itoa(count)+" matches")
 	b.WriteString(header)
 	b.WriteString("\n\n")
 
@@ -140,57 +147,74 @@ func (m pickerModel) View() string {
 		return b.String()
 	}
 
-	end := m.scroll + maxVisible
+	end := m.scroll + m.maxVisible
 	if end > count {
 		end = count
 	}
 	for i := m.scroll; i < end; i++ {
-		row := m.matches[i].Str
 		if i == m.cursor {
-			b.WriteString(styleSelected.Render("❯ " + truncate(row, m.width-4)))
+			b.WriteString(styleSelected.Render("❯ " + truncate(m.matches[i].Str, m.width-4)))
 		} else {
-			b.WriteString(styleNormal.Render("  " + truncate(row, m.width-4)))
+			b.WriteString("  " + renderHighlighted(m.matches[i], m.width-4))
 		}
 		b.WriteByte('\n')
 	}
 
-	if count > maxVisible {
-		b.WriteString(styleHint.Render("  ... " + itoa(count-maxVisible) + " more"))
+	if count > m.maxVisible {
+		b.WriteString(styleHint.Render("  ... " + strconv.Itoa(count-m.maxVisible) + " more"))
 	}
 	return b.String()
 }
 
+// renderHighlighted renders a fuzzy match with matched characters highlighted.
+// Non-selected rows only — selected rows use a block style instead.
+func renderHighlighted(m fuzzy.Match, maxW int) string {
+	runes := []rune(m.Str)
+
+	// Truncate rune slice first so indices stay valid.
+	suffix := ""
+	if maxW > 0 && len(runes) > maxW {
+		if maxW <= 1 {
+			return styleNormal.Render("…")
+		}
+		runes = runes[:maxW-1]
+		suffix = "…"
+	}
+
+	if len(m.MatchedIndexes) == 0 {
+		return styleNormal.Render(string(runes) + suffix)
+	}
+
+	// Build a set of matched rune indices for O(1) lookup.
+	idxSet := make(map[int]bool, len(m.MatchedIndexes))
+	for _, idx := range m.MatchedIndexes {
+		idxSet[idx] = true
+	}
+
+	var b strings.Builder
+	for i, r := range runes {
+		if idxSet[i] {
+			b.WriteString(styleMatch.Render(string(r)))
+		} else {
+			b.WriteString(styleNormal.Render(string(r)))
+		}
+	}
+	b.WriteString(styleNormal.Render(suffix))
+	return b.String()
+}
+
+// truncate shortens s to at most w runes, appending "…" if truncated.
+// Uses rune count to correctly handle multi-byte Unicode characters.
 func truncate(s string, w int) string {
 	if w <= 0 {
 		return ""
 	}
-	if len(s) <= w {
+	runes := []rune(s)
+	if len(runes) <= w {
 		return s
 	}
 	if w <= 1 {
 		return "…"
 	}
-	return s[:w-1] + "…"
-}
-
-func itoa(n int) string {
-	if n == 0 {
-		return "0"
-	}
-	neg := n < 0
-	if neg {
-		n = -n
-	}
-	var buf [20]byte
-	i := len(buf)
-	for n > 0 {
-		i--
-		buf[i] = byte('0' + n%10)
-		n /= 10
-	}
-	if neg {
-		i--
-		buf[i] = '-'
-	}
-	return string(buf[i:])
+	return string(runes[:w-1]) + "…"
 }

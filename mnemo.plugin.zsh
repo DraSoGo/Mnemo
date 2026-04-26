@@ -1,6 +1,6 @@
 # mnemo: zsh integration for the Go binary.
 #   Ctrl+R  → fuzzy history picker (TUI)
-#   Alt+A   → Ollama AI ghost-text prediction (inline)
+#   Ctrl+F   → Ollama AI ghost-text prediction (inline)
 #   Tab     → accept ghost (or normal completion)
 #   Right   → accept ghost when at boundary (or normal forward-char)
 #
@@ -93,7 +93,7 @@ _mnemo_pick() {
 }
 zle -N _mnemo_pick
 
-# ── Alt+A: Ollama AI ghost-text prediction ────────────────────────────────────
+# ── Ctrl+F: Ollama AI ghost-text prediction ────────────────────────────────────
 
 _mnemo_predict() {
     emulate -L zsh
@@ -112,13 +112,18 @@ _mnemo_predict() {
     _mnemo_msg "  [Asking Ollama...]"
     zle -R
 
-    local prediction
-    prediction=$("$bin" predict "$real_buf" 2>/dev/null)
+    local prediction err_msg
+    prediction=$("$bin" predict "$real_buf" 2>/tmp/mnemo_err)
     local rc=$?
     _mnemo_clear_msg
 
-    if (( rc != 0 )) || [[ -z "$prediction" ]]; then
-        _mnemo_msg "  [Ollama unavailable — run: ollama serve]"
+    if (( rc != 0 )); then
+        err_msg=$(cat /tmp/mnemo_err)
+        _mnemo_msg "  [Mnemo error: ${err_msg:-Ollama unreachable}]"
+        return
+    fi
+    if [[ -z "$prediction" ]]; then
+        _mnemo_msg "  [No prediction found]"
         return
     fi
 
@@ -167,25 +172,48 @@ zle -N _mnemo_right
 
 # ── Wrap edit widgets to clear ghost on user input ────────────────────────────
 
-if ! zle -l _mnemo_orig_self_insert &>/dev/null; then
-    zle -A self-insert _mnemo_orig_self_insert
-fi
+# ── Wrap edit widgets to clear ghost on user input ────────────────────────────
+
+# ── Wrap edit widgets to clear ghost on user input ────────────────────────────
+
 _mnemo_self_insert() {
     _mnemo_clear_ai_ghost
     _mnemo_clear_msg
-    zle _mnemo_orig_self_insert
+    # Use original widget if valid and not ourselves, otherwise builtin.
+    if [[ "$widgets[_mnemo_orig_self_insert]" == "user:_mnemo_self_insert" ]]; then
+        zle .self-insert
+    elif zle -l _mnemo_orig_self_insert; then
+        zle _mnemo_orig_self_insert
+    else
+        zle .self-insert
+    fi
 }
 zle -N self-insert _mnemo_self_insert
 
-if ! zle -l _mnemo_orig_backward_delete &>/dev/null; then
-    zle -A backward-delete-char _mnemo_orig_backward_delete
-fi
 _mnemo_backward_delete() {
     _mnemo_clear_ai_ghost
     _mnemo_clear_msg
-    zle _mnemo_orig_backward_delete
+    if [[ "$widgets[_mnemo_orig_backward_delete]" == "user:_mnemo_backward_delete" ]]; then
+        zle .backward-delete-char
+    elif zle -l _mnemo_orig_backward_delete; then
+        zle _mnemo_orig_backward_delete
+    else
+        zle .backward-delete-char
+    fi
 }
 zle -N backward-delete-char _mnemo_backward_delete
+
+# Nuclear cleanup: if the alias exists and points to our function, delete it to break loops.
+[[ "$widgets[_mnemo_orig_self_insert]" == "user:_mnemo_self_insert" ]] && zle -D _mnemo_orig_self_insert
+[[ "$widgets[_mnemo_orig_backward_delete]" == "user:_mnemo_backward_delete" ]] && zle -D _mnemo_orig_backward_delete
+
+# Only create the alias if the current widget isn't already our wrapper.
+if [[ "$widgets[self-insert]" != "user:_mnemo_self_insert" ]]; then
+    zle -A self-insert _mnemo_orig_self_insert
+fi
+if [[ "$widgets[backward-delete-char]" != "user:_mnemo_backward_delete" ]]; then
+    zle -A backward-delete-char _mnemo_orig_backward_delete
+fi
 
 # ── Cleanup on Enter ──────────────────────────────────────────────────────────
 
@@ -200,14 +228,14 @@ add-zle-hook-widget -Uz zle-line-finish _mnemo_line_finish
 : ${MNEMO_KEYBIND:='^R'}
 bindkey "$MNEMO_KEYBIND" _mnemo_pick
 
-: ${MNEMO_PREDICT_KEY:='\ea'}
+: ${MNEMO_PREDICT_KEY:='^F'}
 bindkey "$MNEMO_PREDICT_KEY" _mnemo_predict
 
 bindkey '^I'   _mnemo_tab     # Tab
 bindkey '\e[C' _mnemo_right   # Right arrow (standard)
 bindkey '\eOC' _mnemo_right   # Right arrow (application/keypad)
 
-# ── Optional: warm Ollama model on shell startup so first Alt+A is fast ───────
+# ── Optional: warm Ollama model on shell startup so first Ctrl+F is fast ───────
 # Set MNEMO_WARMUP=0 to disable.
 : ${MNEMO_WARMUP:=1}
 _mnemo_warmup_bg() {
