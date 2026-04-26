@@ -8,20 +8,28 @@ Mnemo is a small project with a clear scope: make zsh history search and AI comp
 
 ## 📑 Table of Contents
 
-- [Code of Conduct](#-code-of-conduct)
-- [How Can I Contribute?](#-how-can-i-contribute)
-  - [Reporting Bugs](#reporting-bugs)
-  - [Suggesting Features](#suggesting-features)
-  - [Pull Requests](#pull-requests)
-- [Development Setup](#-development-setup)
-- [Project Structure](#-project-structure)
-- [Coding Standards](#-coding-standards)
-  - [Go](#go)
-  - [Zsh](#zsh)
-- [Testing](#-testing)
-- [Commit Messages](#-commit-messages)
-- [Pull Request Checklist](#-pull-request-checklist)
-- [Recognition](#-recognition)
+- [🚀 Contributing to Mnemo](#-contributing-to-mnemo)
+  - [📑 Table of Contents](#-table-of-contents)
+  - [🤝 Code of Conduct](#-code-of-conduct)
+  - [🛠 How Can I Contribute?](#-how-can-i-contribute)
+    - [Reporting Bugs](#reporting-bugs)
+    - [Suggesting Features](#suggesting-features)
+    - [Pull Requests](#pull-requests)
+  - [💻 Development Setup](#-development-setup)
+    - [Prerequisites](#prerequisites)
+    - [Get the Code](#get-the-code)
+    - [Build \& Test](#build--test)
+    - [Live Test in a Real Shell](#live-test-in-a-real-shell)
+  - [📂 Project Structure](#-project-structure)
+  - [✏️ Coding Standards](#️-coding-standards)
+    - [Go](#go)
+    - [Zsh](#zsh)
+  - [🧪 Testing](#-testing)
+    - [Go Tests](#go-tests)
+    - [Manual Test Checklist](#manual-test-checklist)
+  - [📝 Commit Messages](#-commit-messages)
+  - [✅ Pull Request Checklist](#-pull-request-checklist)
+  - [🌟 Recognition](#-recognition)
 
 ---
 
@@ -74,8 +82,8 @@ PRs are very welcome. For anything beyond a typo or one-line fix, please **open 
 ### Get the Code
 
 ```bash
-git clone https://github.com/drasogun/mnemo.git
-cd mnemo
+git clone https://github.com/DraSoGo/Mnemo.git
+cd Mnemo
 ```
 
 ### Build & Test
@@ -89,7 +97,7 @@ go test ./...
 
 ```bash
 # Symlink (or copy) to your oh-my-zsh plugin dir, then reload:
-ln -sfn "$PWD" "${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/plugins/mnemo"
+ln -sfn "$PWD" "${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/plugins/Mnemo"
 source ~/.zshrc
 ```
 
@@ -97,7 +105,7 @@ After every code change:
 
 ```bash
 go build -o mnemo .
-source ~/.oh-my-zsh/custom/plugins/mnemo/mnemo.plugin.zsh
+source ~/.oh-my-zsh/custom/plugins/Mnemo/mnemo.plugin.zsh
 ```
 
 ---

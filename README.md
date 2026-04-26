@@ -33,10 +33,10 @@
 
 ```bash
 # Clone into your oh-my-zsh custom plugins directory
-git clone https://github.com/drasogun/mnemo \
-    ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/mnemo
+git clone https://github.com/DraSoGo/Mnemo \
+    ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins
 
-cd ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/mnemo
+cd ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/Mnemo
 go build -o mnemo .
 ```
 
@@ -45,7 +45,7 @@ go build -o mnemo .
 Add `mnemo` to your `~/.zshrc` plugins list:
 
 ```zsh
-plugins=(... zsh-autosuggestions zsh-syntax-highlighting mnemo)
+plugins=(... zsh-autosuggestions zsh-syntax-highlighting Mnemo)
 ```
 
 Reload:
@@ -57,9 +57,9 @@ source ~/.zshrc
 ### Manual (no oh-my-zsh)
 
 ```bash
-git clone https://github.com/drasogun/mnemo ~/.zsh/mnemo
-cd ~/.zsh/mnemo && go build -o mnemo .
-echo 'source ~/.zsh/mnemo/mnemo.plugin.zsh' >> ~/.zshrc
+git clone https://github.com/DraSoGo/Mnemo ~/.zsh
+cd ~/.zsh/Mnemo && go build -o mnemo .
+echo 'source ~/.zsh/Mnemo/mnemo.plugin.zsh' >> ~/.zshrc
 ```
 
 ### 🧠 Brain Setup (Ollama, optional)
@@ -208,7 +208,7 @@ go fmt ./...
 go build -o mnemo .
 
 # Sync to oh-my-zsh plugin dir
-cp mnemo mnemo.plugin.zsh README.md ~/.oh-my-zsh/custom/plugins/mnemo/
+cp mnemo mnemo.plugin.zsh README.md ~/.oh-my-zsh/custom/plugins/Mnemo/
 
 # Reload your shell
 source ~/.zshrc
