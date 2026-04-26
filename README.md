@@ -152,7 +152,7 @@ Mnemo is built around a clear separation between **shell-side widgets** and a **
 
 ---
 
-## 📂 Project Structure
+## 📂 Project 
 
 ```
 .
