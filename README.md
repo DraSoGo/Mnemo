@@ -228,7 +228,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for the full contributor workflow, commit
 
 ---
 
-## Support
+## ☕ Support
 
 If WiringWorkbench is useful to you, you can support the project here:
 
