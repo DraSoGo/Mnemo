@@ -228,6 +228,14 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for the full contributor workflow, commit
 
 ---
 
+## Support
+
+If WiringWorkbench is useful to you, you can support the project here:
+
+[Support Me](https://buymeacoffee.com/drasogo)
+
+---
+
 ## 📝 License
 
 This project is licensed under the GPL-3.0 License — see the [LICENSE](LICENSE) file for details.
